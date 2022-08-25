@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { AngularSelectorDefinitionProvider } from "./provider/helper";
+import { salefoceController } from "./provider/helper";
 
 export function activate(context: vscode.ExtensionContext) {
   const selectorRegistration = vscode.languages.registerDefinitionProvider(
@@ -8,7 +8,7 @@ export function activate(context: vscode.ExtensionContext) {
       pattern: "**/*.cmp",
       scheme: "file",
     },
-    new AngularSelectorDefinitionProvider(context)
+    new salefoceController(context)
   );
 
   context.subscriptions.push(selectorRegistration);

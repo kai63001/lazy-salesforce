@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { Location, Position, ProviderResult, TextDocument, Uri } from "vscode";
 import * as fs from "fs";
+var path = require("path");
 
 interface FindResult {
   path: string;
@@ -9,9 +10,7 @@ interface FindResult {
   colNumber: number;
 }
 
-export class AngularSelectorDefinitionProvider
-  implements vscode.DefinitionProvider
-{
+export class salefoceController implements vscode.DefinitionProvider {
   context: vscode.ExtensionContext;
   cache: any;
   cacheName: string = this.toString();
@@ -24,32 +23,20 @@ export class AngularSelectorDefinitionProvider
   private async searchTag(file: Uri, clickedTag: string): Promise<FindResult> {
     //regexp find function definition
     const findTagInDocumentRegex = new RegExp(`${clickedTag}: `, "i");
-    // const findTagInDocumentRegex = new RegExp(
-    //   ``,
-    //   "i"
-    // );
 
     const document = await vscode.workspace.openTextDocument(
       Uri.file(file.fsPath)
     );
-    console.log("file", file.fsPath);
-    console.log("document", document.getText());
 
     const tagMatch = findTagInDocumentRegex.test(document.getText());
     let lineNumber = 0;
     let colNumber = 0;
     console.log(tagMatch);
     if (tagMatch) {
-      const componentName = clickedTag
-        .substring(clickedTag.indexOf("-"))
-        .replace(/-/g, "")
-        .toLowerCase();
       const lines = document.getText().split("\n");
       lines.forEach((line, index) => {
-        if (
-          line.includes("class") &&
-          line.toLowerCase().includes(`${componentName}`)
-        ) {
+        console.log("line", line);
+        if (line.includes(`${clickedTag}: `)) {
           lineNumber = index;
         }
       });
@@ -64,24 +51,46 @@ export class AngularSelectorDefinitionProvider
   }
 
   private async searchInAllFiles(clickedTag: string): Promise<any> {
-    // const files = await vscode.workspace.findFiles("*.js");
-
     //findFile activeTextEditor
-    const activeEditor: any = vscode.window.activeTextEditor;
-    let projectFolder: any = vscode.workspace.workspaceFolders
-      ?.map((folder) => folder.uri.path)[0]
-      .slice(1);
-    //make projectFolder first letter uppercase
-    projectFolder =
-      projectFolder.charAt(0).toUpperCase() + projectFolder.slice(1);
-    const activeFile = activeEditor.document.uri;
-    let ac = activeFile.path
-      .slice(1)
-      .replace("\\", "/")
-      .toString()
-      .replace(projectFolder, "")
-      .slice(1);
-    let removeLast = ac.split('/').pop();
+    // const activeEditor: any = vscode.window.activeTextEditor;
+    // let projectFolder: any = vscode.workspace.workspaceFolders
+    //   ?.map((folder) => folder.uri.path)[0]
+    //   .slice(1);
+    // //make projectFolder first letter uppercase
+
+    // console.log("projectFolder", projectFolder);
+    // const activeFile = activeEditor.document.uri;
+    // let ac = activeFile.path.replace("\\", "/").toString();
+    // ac = ac.charAt(0).toString().toLowerCase() + ac.slice(1);
+    // ac = ac.replace(projectFolder, "").slice(1);
+    // let removeLast = ac.split("/").pop();
+    // ac = ac.replace(removeLast, "");
+    // if(ac.toString().startWith() == "/")
+    // {
+    //   ac = ac.toString().slice(1);
+    // }else{
+    //     ac = ac.toString().charAt(0).toUpperCase() + ac.toString().slice(1);
+    // }
+
+    // console.log("ac:", ac);
+
+    var currentlyOpenTabfilePath: any =
+      vscode.window.activeTextEditor?.document.fileName;
+
+      //remove root path from currentlyOpenTabfilePath
+        currentlyOpenTabfilePath = currentlyOpenTabfilePath.replace(
+            vscode.workspace.rootPath,
+            ""
+        );
+        currentlyOpenTabfilePath = currentlyOpenTabfilePath.toString().replaceAll(
+            "\\",
+            "/"
+        ).slice(1);
+    // var currentlyOpenTabfileName = path.basename(currentlyOpenTabfilePath);
+
+    console.log("currentlyOpenTabfileName", currentlyOpenTabfilePath);
+    let ac = currentlyOpenTabfilePath;
+    let removeLast = ac.split("/").pop();
     ac = ac.replace(removeLast, "");
 
     const files = await vscode.workspace.findFiles(`${ac}*.js`);
