@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { salefoceController } from "./provider/helper";
+import { salefoceController } from "./provider/controller";
 
 export function activate(context: vscode.ExtensionContext) {
   const selectorRegistration = vscode.languages.registerDefinitionProvider(
