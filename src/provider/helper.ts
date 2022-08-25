@@ -1,7 +1,5 @@
 import * as vscode from "vscode";
 import { Location, Position, ProviderResult, TextDocument, Uri } from "vscode";
-import * as fs from "fs";
-var path = require("path");
 
 interface FindResult {
   path: string;
@@ -35,7 +33,7 @@ export class salefoceController implements vscode.DefinitionProvider {
     if (tagMatch) {
       const lines = document.getText().split("\n");
       lines.forEach((line, index) => {
-        console.log("line", line);
+        // console.log("line", line);
         if (line.includes(`${clickedTag}: `)) {
           lineNumber = index;
         }
@@ -51,42 +49,19 @@ export class salefoceController implements vscode.DefinitionProvider {
   }
 
   private async searchInAllFiles(clickedTag: string): Promise<any> {
-    //findFile activeTextEditor
-    // const activeEditor: any = vscode.window.activeTextEditor;
-    // let projectFolder: any = vscode.workspace.workspaceFolders
-    //   ?.map((folder) => folder.uri.path)[0]
-    //   .slice(1);
-    // //make projectFolder first letter uppercase
-
-    // console.log("projectFolder", projectFolder);
-    // const activeFile = activeEditor.document.uri;
-    // let ac = activeFile.path.replace("\\", "/").toString();
-    // ac = ac.charAt(0).toString().toLowerCase() + ac.slice(1);
-    // ac = ac.replace(projectFolder, "").slice(1);
-    // let removeLast = ac.split("/").pop();
-    // ac = ac.replace(removeLast, "");
-    // if(ac.toString().startWith() == "/")
-    // {
-    //   ac = ac.toString().slice(1);
-    // }else{
-    //     ac = ac.toString().charAt(0).toUpperCase() + ac.toString().slice(1);
-    // }
-
-    // console.log("ac:", ac);
 
     var currentlyOpenTabfilePath: any =
       vscode.window.activeTextEditor?.document.fileName;
 
-      //remove root path from currentlyOpenTabfilePath
-        currentlyOpenTabfilePath = currentlyOpenTabfilePath.replace(
-            vscode.workspace.rootPath,
-            ""
-        );
-        currentlyOpenTabfilePath = currentlyOpenTabfilePath.toString().replaceAll(
-            "\\",
-            "/"
-        ).slice(1);
-    // var currentlyOpenTabfileName = path.basename(currentlyOpenTabfilePath);
+    //remove root path from currentlyOpenTabfilePath
+    currentlyOpenTabfilePath = currentlyOpenTabfilePath.replace(
+      vscode.workspace.rootPath,
+      ""
+    );
+    currentlyOpenTabfilePath = currentlyOpenTabfilePath
+      .toString()
+      .replaceAll("\\", "/")
+      .slice(1);
 
     console.log("currentlyOpenTabfileName", currentlyOpenTabfilePath);
     let ac = currentlyOpenTabfilePath;
@@ -115,10 +90,15 @@ export class salefoceController implements vscode.DefinitionProvider {
     );
   }
 
-  private async find(clickedTag: string): Promise<Location> {
-    const cachedResult = this.cache[clickedTag];
-    console.log("cachedResult", cachedResult);
-    console.log("clickedTag", clickedTag);
+  private async find(clickedTag: string,document:TextDocument): Promise<Location> {
+
+    const cacheName = clickedTag+":"+document.fileName;
+
+    const cachedResult = this.cache[cacheName];
+    // console.log("cachedResult", cachedResult);
+    // console.log("clickedTag", clickedTag);
+
+    console.log(document.uri.path)
 
     if (cachedResult) {
       const result = await this.searchTag(Uri.parse(cachedResult), clickedTag);
@@ -131,9 +111,9 @@ export class salefoceController implements vscode.DefinitionProvider {
       .then(this.buildLocation)
       .then((res) => {
         if (!res) {
-          this.cache[clickedTag] = null;
+          this.cache[cacheName] = null;
         } else {
-          this.cache[clickedTag] = res.uri.path;
+          this.cache[cacheName] = res.uri.path;
         }
 
         this.context.globalState.update(this.cacheName, this.cache);
@@ -147,6 +127,6 @@ export class salefoceController implements vscode.DefinitionProvider {
   ): ProviderResult<Location> {
     const wordRange = document.getWordRangeAtPosition(position);
     const clickedTag = document.getText(wordRange);
-    return this.find(clickedTag);
+    return this.find(clickedTag,document);
   }
 }
