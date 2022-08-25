@@ -10,14 +10,18 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:lazy-salesforce.helloWorld"
+    "*"
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
+    "keybindings": [
       {
+        "key": "ctrl+1",
         "command": "lazy-salesforce.helloWorld",
-        "title": "Hello World"
+        "when":"editorTextFocus && editorLangId == 'html'",
+        "args": {
+          "snippet": "{!$TM_SELECTED_TEXT}$0"
+        }
       }
     ]
   },
